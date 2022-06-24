@@ -68,12 +68,12 @@ exports.up = function(knex) {
 exports.down = function(knex) {
     return new Promise(async (resolve, reject) => {
         try {
-          await knex.schema.dropTable('movie');
-          await knex.schema.dropTable('people');
-          await knex.schema.dropTable('genre');
           await knex.schema.dropTable('movie_actor');
           await knex.schema.dropTable('movie_director');
           await knex.schema.dropTable('movie_genre');
+          await knex.schema.dropTable('movie');
+          await knex.schema.dropTable('people');
+          await knex.schema.dropTable('genre');
           resolve();
         }
         catch(error){
