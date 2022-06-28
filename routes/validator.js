@@ -31,6 +31,16 @@ function validateloginCredential(loginCredential) {
     return Joi.validate(loginCredential, schema);
 }
 
+function validateId(id) {
+  const schema = {
+    
+    id: Joi.number().integer().required()
+  };
+
+  return Joi.validate(id, schema);
+}
+
 exports.validateUser = validateUser;
 exports.validateMovie = validateMovie;
 exports.validateloginCredential = validateloginCredential;
+exports.validateId = validateId;

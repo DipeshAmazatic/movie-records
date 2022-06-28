@@ -5,6 +5,13 @@
 exports.up = function(knex) {
     return new Promise(async (resolve, reject) => {
         try {
+          await knex.schema.createTable('genre', (table) => {
+            table.increments();
+            table.string('name').notNullable();
+            table.timestamp('created_at').defaultTo(knex.fn.now());
+            table.timestamp('updated_at').defaultTo(knex.fn.now());
+          });
+          
           await knex.schema.createTable('movie', (table) => {
               table.increments();
               table.string('title').notNullable();
@@ -14,19 +21,13 @@ exports.up = function(knex) {
               table.date('release_date').defaultTo(knex.fn.now()).notNullable();
               table.timestamp('created_at').defaultTo(knex.fn.now());
               table.timestamp('updated_at').defaultTo(knex.fn.now());
+              table.integer('genre_id').references('id').inTable('genre');
         });
           await knex.schema.createTable('people', (table) => {
               table.increments();
               table.string('name').notNullable();
               table.timestamp('created_at').defaultTo(knex.fn.now());
               table.timestamp('updated_at').defaultTo(knex.fn.now());
-          });
-    
-          await knex.schema.createTable('genre', (table) => {
-            table.increments();
-            table.string('name').notNullable();
-            table.timestamp('created_at').defaultTo(knex.fn.now());
-            table.timestamp('updated_at').defaultTo(knex.fn.now());
           });
     
           await knex.schema.createTable('movie_actor', (table) => {

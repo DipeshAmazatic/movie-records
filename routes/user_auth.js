@@ -21,9 +21,10 @@ router.post('/',  (req, res) => {
                     if(!validPassword) return res.status(400).send('Invalid Email or Password.');
                     const token = jwt.sign({ id: user[0]['id'], email: user[0]['email'], is_admin:user[0].is_admin }, 
                     config.get('jwtPrivateKey'), { expiresIn: "24h" });
-                    return res.send(token);
+                    return res.status(200).send(token);
                 }
         })
+        .catch((error) => res.status(400).json(error));
   });
   
 
