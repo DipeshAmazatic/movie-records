@@ -63,13 +63,13 @@ router.get('/:id',  (req, res) =>{
 router.post('/',  async(req, res) =>{
     const { error } = validateUser(req.body);
     if (error) return res.status(400).send(error.details[0].message);
-    knex.transaction(function(trx) {
-        return knex.select().from('user').transacting(trx).where({email: req.body.email}).orWhere({phone_no: req.body.phone_no})
+    knex.transaction((trx) =>{
+        return knex.select('id').from('user').transacting(trx).where({email: req.body.email}).orWhere({phone_no: req.body.phone_no})
         .then(async(user) => {
             if(user && user.length > 0) return res.status(400).send('User Already registered...');
             const salt =await bcrypt.genSalt(15);
             password =await bcrypt.hash(req.body.password, salt);
-            return knex('user')
+            return knex('user').returning('*')
                 .insert({
                     name: req.body.name,
                     email: req.body.email,
@@ -77,18 +77,13 @@ router.post('/',  async(req, res) =>{
                     password: password,
                     is_admin: req.body.is_admin || false
                 })
-                .then(() =>{
-                    return knex.select().from('user').where({email: req.body.email})
-                        .then((user)=> {
-                            return res.status(201).send(user);
-                        })
-                        .catch((error) => res.status(400).json(error));
+                .then((name) => res.status(201).send(name))
+                .catch((error) => res.status(400).json(error))
+                .then(trx.commit)
+                .catch((err) => {
+                    trx.rollback();
+                    res.status(400).json(err)
                 })
-            .then(trx.commit)
-            .catch((err) => {
-                trx.rollback();
-                res.status(400).json(err)
-            })
         })
     })
 });

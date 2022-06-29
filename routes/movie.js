@@ -1,16 +1,18 @@
 const express = require('express');
+var moment = require("moment")
+require("moment-duration-format");
 const knex = require('../db/knex');
 const { validateMovie, validateId } = require('./validator')
 const admin = require('../middleware/admin');
 const auth = require('../middleware/auth');
 const router = express.Router();
 
-router.get('/', auth, admin, (req, res) =>{
-    knex.select()
+router.get('/',  (req, res) =>{
+    knex.select('id', 'title', 'release_date', 'duration')
     .where({is_delete: false})
     .from('movie')
     .then((movie)=> res.status(200).send(movie))
-    .catch((error) => res.status(400).json(error));
+    .catch((error) => res.status(400).send(error))
 })
 
 router.get('/:id', auth, admin, (req, res) =>{
@@ -29,21 +31,34 @@ router.get('/:id', auth, admin, (req, res) =>{
     .catch((error) => res.status(400).json(error));
 })
 
-router.post('/', auth,admin, (req, res) => {
+router.post('/', (req, res) => {
     const { error } = validateMovie(req.body);
     if (error) return res.status(400).send(error.details[0].message);
-    knex('movie')
+    knex.transaction((trx) =>{
+        knex('movie')
+        .returning('id')
         .insert({
             title: req.body.title,
             lang: req.body.lang,
-            duration: req.body.duration,
-            release_date: req.body.release_date
+            duration: moment.duration(req.body.duration, "minutes").format(),
+            release_date: req.body.release_date,
+            genre_id: req.body.genre_id,
         })
-        .then(() =>{
-            knex.select().from('movie')
-                .then((movie)=> res.status(201).send(movie))
+        .transacting(trx)
+        .then((id) =>{
+            const movie_id = id[0]['id'];
+            return knex('movie_director').insert({movie_id:movie_id, director_id:req.body.director_id}).transacting(trx)
+            .then(() => {return knex('movie_actor').insert({movie_id:movie_id, actor_id:req.body.actor_id}).transacting(trx)})
         })
-        .catch((error) => res.status(400).json(error));
+        .then(trx.commit)
+        .catch(trx.rollback);
+    })
+    .then(() =>{
+        res.status(201).send('New movie added...')
+    })
+    .catch((err) =>{
+        res.status(400).json(err.detail)
+    });
 })
 
 router.delete('/:id', auth, admin, (req, res) => {

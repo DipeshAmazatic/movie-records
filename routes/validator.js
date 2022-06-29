@@ -13,13 +13,18 @@ function validateUser(user) {
 
 function validateMovie(movie) {
     const schema = {
-      title: Joi.string().min(5).max(50).required(),
-      lang: Joi.string().min(5).max(10).required(),
-      release_date: Joi.date().required()
+      title: Joi.string().min(3).max(50).required(),
+      lang: Joi.string().min(3).max(10).required(),
+      release_date: Joi.date().required(),
+      duration : Joi.number().integer().required(),
+      genre_id: Joi.number().integer().required(),
+      actor_id: Joi.number().integer().required(),
+      director_id: Joi.number().integer().required()
     };
   
     return Joi.validate(movie, schema);
   }
+
 
 function validateloginCredential(loginCredential) {
     const schema = {
@@ -40,7 +45,17 @@ function validateId(id) {
   return Joi.validate(id, schema);
 }
 
+function validateGenrePeople(name) {
+  const schema = {
+    
+    name: Joi.string().min(5).max(255).required(),
+  };
+
+  return Joi.validate(name, schema);
+}
+
 exports.validateUser = validateUser;
 exports.validateMovie = validateMovie;
 exports.validateloginCredential = validateloginCredential;
 exports.validateId = validateId;
+exports.validateGenrePeople = validateGenrePeople;
