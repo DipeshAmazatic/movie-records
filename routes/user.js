@@ -6,7 +6,7 @@ const auth = require('../middleware/auth');
 const { validateUser, validateId } = require('./validator');
 const router = express.Router();
 
-router.get('/', auth, admin, (req, res) =>{
+router.get('/',  (req, res) =>{
     const page = req.query.page;
     knex.select('id', 'name', 'email', 'phone_no', 'is_admin', 'is_delete', 'created_at', 'updated_at')
     .where({is_delete: false})
@@ -16,7 +16,7 @@ router.get('/', auth, admin, (req, res) =>{
     .catch((error) => res.status(400).json(error));
 })
 
-router.get('/:id',  (req, res) =>{
+router.get('/:id', auth, admin, (req, res) =>{
     if(isNaN(req.params.id))
         return res.status(404).send("Please check your Id...");
     const { error } = validateId({id: req.params.id});
@@ -31,34 +31,6 @@ router.get('/:id',  (req, res) =>{
     })
     .catch((error) => res.status(400).json(error));
 })
-
-// router.post('/',  async(req, res) =>{
-//     const { error } = validateUser(req.body);
-//     if (error) return res.status(400).send(error.details[0].message);
-//     knex.select().from('user').where({email: req.body.email}).orWhere({phone_no: req.body.phone_no})
-//         .then((user) => {
-//             if(user && user.length > 0) return res.status(400).send('User Already registered...');
-//         })
-//         .catch((error) => res.status(400).json(error));
-//     const salt =await bcrypt.genSalt(15);
-//     password =await bcrypt.hash(req.body.password, salt);
-//     knex('user')
-//         .insert({
-//             name: req.body.name,
-//             email: req.body.email,
-//             phone_no: req.body.phone_no,
-//             password: password,
-//             is_admin: req.body.is_admin || false
-//         })
-//         .then(() =>{
-//             knex.select().from('user').where({email: req.body.email})
-//                 .then((user)=> {
-//                     return res.status(201).send(user);
-//                 })
-//                 .catch((error) => res.status(400).json(error));
-//         })
-//         .catch((error) => res.status(400).json(error));
-// })
 
 router.post('/',  async(req, res) =>{
     const { error } = validateUser(req.body);

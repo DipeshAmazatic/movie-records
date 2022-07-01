@@ -6,13 +6,13 @@ const { validateGenrePeople } = require('./validator')
 
 const router = express.Router();
 
-router.get('/',  (req, res) =>{
+router.get('/', auth, admin, (req, res) =>{
     knex('people').select()
     .then((people)=> res.status(200).send(people))
     .catch((error) => res.status(400).json(error));
 })
 
-router.post('/',  (req, res) => {//auth,admin,
+router.post('/', auth, admin, (req, res) => {
     const { error } = validateGenrePeople(req.body);
     if (error) return res.status(400).send(error.details[0].message);
     knex('people')
