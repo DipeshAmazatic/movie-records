@@ -6,7 +6,7 @@ const auth = require('../middleware/auth');
 const { validateUser, validateId } = require('./validator');
 const router = express.Router();
 
-router.get('/',  (req, res) =>{
+router.get('/', auth, admin,  (req, res) =>{
     const page = req.query.page;
     knex.select('id', 'name', 'email', 'phone_no', 'is_admin', 'is_delete', 'created_at', 'updated_at')
     .where({is_delete: false})
@@ -69,7 +69,7 @@ router.patch('/:id', auth, admin, (req, res) =>{
         .where({id: req.params.id})
         .update({
             name: req.body.name || user[0].name,
-            //updated_at : 
+            updated_at : new Date(Date.now()),
         })
         .then((user) => {
             if(!user)
@@ -87,7 +87,8 @@ router.delete('/:id', auth, admin, (req, res) => {
     knex('user')
         .where({id: req.params.id})
         .update({
-            is_delete: true
+            is_delete: true,
+            updated_at : new Date(Date.now()),
         })
         .then((user) => {
             if(!user)

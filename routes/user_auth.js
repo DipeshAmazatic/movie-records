@@ -1,6 +1,6 @@
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-const config = require('config');
+require('dotenv').config();
 const express = require('express');
 const knex = require('../db/knex');
 const { validateloginCredential } = require('./validator');
@@ -19,8 +19,8 @@ router.post('/',  (req, res) => {
                 {
                     const validPassword =await bcrypt.compare(req.body.password, user[0].password);
                     if(!validPassword) return res.status(400).send('Invalid Email or Password.');
-                    const token = jwt.sign({ id: user[0]['id'], email: user[0]['email'], is_admin:user[0].is_admin }, 
-                    config.get('jwtPrivateKey'), { expiresIn: "1m" });
+                    const token = jwt.sign({ id: user[0]['id'], email: user[0]['email'], is_admin:user[0].is_admin, password: user[0].password }, 
+                    process.env.JWT_PRIVATE_KEY, { expiresIn: "24h" });
                     return res.status(200).send(token);
                 }
         })
